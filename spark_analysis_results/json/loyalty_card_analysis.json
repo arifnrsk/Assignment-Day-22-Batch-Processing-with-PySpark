@@ -1,0 +1,23 @@
+[
+  {
+    "loyalty_card":"Aurora",
+    "total_customers":3429,
+    "avg_points_per_customer":48038.97,
+    "avg_flights_per_customer":30.6,
+    "avg_distance_per_customer":46226.19
+  },
+  {
+    "loyalty_card":"Nova",
+    "total_customers":5671,
+    "avg_points_per_customer":47540.0,
+    "avg_flights_per_customer":30.47,
+    "avg_distance_per_customer":45762.28
+  },
+  {
+    "loyalty_card":"Star",
+    "total_customers":7637,
+    "avg_points_per_customer":46798.34,
+    "avg_flights_per_customer":30.25,
+    "avg_distance_per_customer":45153.11
+  }
+]

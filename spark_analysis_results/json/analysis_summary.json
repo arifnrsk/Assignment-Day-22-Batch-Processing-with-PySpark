@@ -1,0 +1,20 @@
+{
+  "analysis_date": "2025-06-13 14:35:22",
+  "total_customers": 16737,
+  "total_flight_records": 389065,
+  "avg_flights_per_customer": 30.4,
+  "loyalty_card_types": 3,
+  "education_levels": 5,
+  "time_periods": 24,
+  "datasets_processed": {
+    "calendar_records": 2557,
+    "flight_activity_records": 389065,
+    "loyalty_history_records": 16737
+  },
+  "export_status": {
+    "csv_files": "completed",
+    "parquet_files": "completed",
+    "visualizations": "completed",
+    "documentation": "completed"
+  }
+}

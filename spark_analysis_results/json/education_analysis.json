@@ -1,0 +1,42 @@
+[
+  {
+    "education":"High School or Below",
+    "total_customers":782,
+    "avg_lifetime_flights":31.0,
+    "avg_lifetime_distance":46441.24,
+    "avg_customer_salary":61071.72,
+    "median_flights":34
+  },
+  {
+    "education":"Master",
+    "total_customers":508,
+    "avg_lifetime_flights":30.66,
+    "avg_lifetime_distance":46456.19,
+    "avg_customer_salary":103757.85,
+    "median_flights":34
+  },
+  {
+    "education":"College",
+    "total_customers":4238,
+    "avg_lifetime_flights":30.61,
+    "avg_lifetime_distance":45771.54,
+    "avg_customer_salary":73262.0,
+    "median_flights":33
+  },
+  {
+    "education":"Doctor",
+    "total_customers":734,
+    "avg_lifetime_flights":30.33,
+    "avg_lifetime_distance":45174.23,
+    "avg_customer_salary":178608.9,
+    "median_flights":34
+  },
+  {
+    "education":"Bachelor",
+    "total_customers":10475,
+    "avg_lifetime_flights":30.26,
+    "avg_lifetime_distance":45423.13,
+    "avg_customer_salary":72451.06,
+    "median_flights":34
+  }
+]

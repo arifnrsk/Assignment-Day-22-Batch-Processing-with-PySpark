@@ -84,6 +84,11 @@ tmp/
 !data/input/.gitkeep
 !data/output/.gitkeep
 
+# Exception: Include spark_analysis_results data (required for Day 22 batch processing)
+!spark_analysis_results/**/*.csv
+!spark_analysis_results/**/*.json
+!spark_analysis_results/**/*.parquet
+
 # Docker specific
 .dockerignore
 
