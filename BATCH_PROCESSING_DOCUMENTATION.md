@@ -333,13 +333,29 @@ docker-compose up -d
 docker ps
 ```
 
-### **3. Access Airflow UI**
+### **3. Initialize Airflow Database (Required)**
+```bash
+# Wait for containers to start (30-60 seconds), then run:
+
+# Initialize Airflow database
+docker exec -it assignment-day-22-batch-processing-with-pyspark-airflow-webserver-1 \
+  airflow db migrate
+
+# Create admin user
+docker exec -it assignment-day-22-batch-processing-with-pyspark-airflow-webserver-1 \
+  airflow users create --username admin --firstname Admin --lastname User \
+  --role Admin --email admin@example.com --password admin
+```
+
+**Note**: This step is required because the automatic airflow-init service may fail due to dependency loading issues. The manual initialization ensures proper database setup.
+
+### **4. Access Airflow UI**
 ```bash
 # Open browser to: http://localhost:8080
 # Login: admin / admin
 ```
 
-### **4. Trigger DAG**
+### **5. Trigger DAG**
 ```bash
 # Via UI: Click on 'airline_batch_processing' DAG and trigger
 # Via CLI:
@@ -347,12 +363,12 @@ docker exec assignmentday22-batchprocessingwithpyspark-airflow-webserver-1 \
   airflow dags trigger airline_batch_processing
 ```
 
-### **5. Monitor Execution**
+### **6. Monitor Execution**
 - **Airflow UI**: Monitor task progress and logs
 - **Logs**: Check individual task logs for detailed output
 - **Results**: Verify CSV files and PostgreSQL data
 
-### **6. Verify Results**
+### **7. Verify Results**
 ```bash
 # Check CSV outputs
 docker exec assignmentday22-batchprocessingwithpyspark-airflow-webserver-1 \

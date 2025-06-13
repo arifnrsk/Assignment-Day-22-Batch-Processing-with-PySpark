@@ -72,7 +72,26 @@ docker-compose up -d
 docker-compose ps
 ```
 
-### 3. Access Applications
+### 3. Initialize Airflow Database (Required)
+
+**Important**: After starting services, you need to manually initialize the Airflow database:
+
+```bash
+# Wait for containers to start (30-60 seconds), then run:
+
+# Initialize Airflow database
+docker exec -it assignment-day-22-batch-processing-with-pyspark-airflow-webserver-1 \
+  airflow db migrate
+
+# Create admin user
+docker exec -it assignment-day-22-batch-processing-with-pyspark-airflow-webserver-1 \
+  airflow users create --username admin --firstname Admin --lastname User \
+  --role Admin --email admin@example.com --password admin
+```
+
+**Note**: This step is required because the automatic airflow-init service may fail due to dependency loading issues. The manual initialization ensures proper database setup.
+
+### 4. Access Applications
 
 - **Airflow Web UI**: http://localhost:8080
   - Username: `admin`
@@ -169,18 +188,31 @@ Assignment Day 22 - Batch Processing with PySpark/
 # Start all services
 docker-compose up -d
 
-# Wait for initialization (2-3 minutes)
-docker-compose logs -f airflow-init
+# Wait for containers to start (30-60 seconds)
+docker-compose ps
 ```
 
-### 2. Access Airflow UI
+### 2. Initialize Airflow (Required)
+
+```bash
+# Initialize Airflow database
+docker exec -it assignment-day-22-batch-processing-with-pyspark-airflow-webserver-1 \
+  airflow db migrate
+
+# Create admin user
+docker exec -it assignment-day-22-batch-processing-with-pyspark-airflow-webserver-1 \
+  airflow users create --username admin --firstname Admin --lastname User \
+  --role Admin --email admin@example.com --password admin
+```
+
+### 3. Access Airflow UI
 
 1. Open http://localhost:8080
 2. Login with `admin` / `admin`
 3. Navigate to DAGs page
 4. Find `batch_processing_pipeline` DAG
 
-### 3. Execute Pipeline
+### 4. Execute Pipeline
 
 ```bash
 # Trigger DAG manually
@@ -189,7 +221,7 @@ docker-compose exec airflow-webserver airflow dags trigger batch_processing_pipe
 # Or use the UI to trigger
 ```
 
-### 4. Monitor Execution
+### 5. Monitor Execution
 
 - **Airflow UI**: Monitor task status and logs
 - **Spark UI**: View Spark job execution
