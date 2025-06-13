@@ -60,7 +60,7 @@ cd Assignment-Day-22-Batch-Processing-with-PySpark
 
 ### 2. Environment Setup
 
-The project uses default environment variables configured in `docker-compose.yml`. No additional setup required.
+The project includes a pre-configured `.env` file with all necessary environment variables. No additional setup required.
 
 ### 2. Start Services
 

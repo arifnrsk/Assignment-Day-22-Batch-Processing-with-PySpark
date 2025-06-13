@@ -320,6 +320,8 @@ docker-compose --version
 # Clone the repository
 git clone https://github.com/arifnrsk/Assignment-Day-22-Batch-Processing-with-PySpark.git
 cd Assignment-Day-22-Batch-Processing-with-PySpark
+
+# The project includes a pre-configured .env file with all necessary environment variables
 ```
 
 ### **2. Start Infrastructure**

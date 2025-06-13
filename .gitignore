@@ -37,8 +37,7 @@ data/temp/
 ehthumbs.db
 Thumbs.db
 
-# Environment variables
-.env
+# Environment variables (exclude development .env for easy setup)
 .env.local
 .env.development.local
 .env.test.local
