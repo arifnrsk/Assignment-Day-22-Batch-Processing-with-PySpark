@@ -2,7 +2,7 @@
 
 **Assignment Day 22 - Data Engineer Bootcamp**  
 
-## 📋 Project Overview
+##Project Overview
 
 This project implements a comprehensive **Batch Processing Pipeline** using **Apache Airflow** and **PySpark** to process airline customer data. The pipeline performs advanced ETL operations, conducts churn-retention analysis, and stores results in multiple formats (PostgreSQL, CSV, Console).
 
