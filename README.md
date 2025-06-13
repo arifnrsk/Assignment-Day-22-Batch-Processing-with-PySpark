@@ -50,39 +50,29 @@ This project implements a comprehensive **Batch Processing Pipeline** using **Ap
 - At least 4GB RAM available
 - At least 2 CPU cores
 
-### 1. Clone & Setup
+### 1. Clone Repository
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd "Assignment Day 22 - Batch Processing with PySpark"
-
-# Create required directories
-mkdir -p logs plugins
+git clone https://github.com/arifnrsk/Assignment-Day-22-Batch-Processing-with-PySpark.git
+cd Assignment-Day-22-Batch-Processing-with-PySpark
 ```
 
 ### 2. Environment Setup
 
-Create `.env` file:
-```bash
-# Copy environment template
-echo "AIRFLOW_UID=50000" > .env
-echo "AIRFLOW_PROJ_DIR=." >> .env
-echo "_AIRFLOW_WWW_USER_USERNAME=admin" >> .env
-echo "_AIRFLOW_WWW_USER_PASSWORD=admin" >> .env
-```
+The project uses default environment variables configured in `docker-compose.yml`. No additional setup required.
 
-### 3. Start Services
+### 2. Start Services
 
 ```bash
-# Build and start all services
-docker-compose up --build -d
+# Start all services (no additional setup required)
+docker-compose up -d
 
 # Check services status
 docker-compose ps
 ```
 
-### 4. Access Applications
+### 3. Access Applications
 
 - **Airflow Web UI**: http://localhost:8080
   - Username: `admin`

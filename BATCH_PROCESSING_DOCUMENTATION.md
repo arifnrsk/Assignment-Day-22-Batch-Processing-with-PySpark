@@ -315,22 +315,29 @@ docker --version
 docker-compose --version
 ```
 
-### **1. Start Infrastructure**
+### **1. Clone Repository**
 ```bash
-# Start all services
+# Clone the repository
+git clone https://github.com/arifnrsk/Assignment-Day-22-Batch-Processing-with-PySpark.git
+cd Assignment-Day-22-Batch-Processing-with-PySpark
+```
+
+### **2. Start Infrastructure**
+```bash
+# Start all services (no additional setup required)
 docker-compose up -d
 
 # Verify services are running
 docker ps
 ```
 
-### **2. Access Airflow UI**
+### **3. Access Airflow UI**
 ```bash
 # Open browser to: http://localhost:8080
 # Login: admin / admin
 ```
 
-### **3. Trigger DAG**
+### **4. Trigger DAG**
 ```bash
 # Via UI: Click on 'airline_batch_processing' DAG and trigger
 # Via CLI:
@@ -338,12 +345,12 @@ docker exec assignmentday22-batchprocessingwithpyspark-airflow-webserver-1 \
   airflow dags trigger airline_batch_processing
 ```
 
-### **4. Monitor Execution**
+### **5. Monitor Execution**
 - **Airflow UI**: Monitor task progress and logs
 - **Logs**: Check individual task logs for detailed output
 - **Results**: Verify CSV files and PostgreSQL data
 
-### **5. Verify Results**
+### **6. Verify Results**
 ```bash
 # Check CSV outputs
 docker exec assignmentday22-batchprocessingwithpyspark-airflow-webserver-1 \
