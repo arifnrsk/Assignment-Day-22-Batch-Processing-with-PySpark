@@ -54,7 +54,7 @@ This project implements a comprehensive **Batch Processing Pipeline** using **Ap
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/arifnrsk/Assignment-Day-22-Batch-Processing-with-PySpark.git
 cd "Assignment Day 22 - Batch Processing with PySpark"
 
 # Create required directories
