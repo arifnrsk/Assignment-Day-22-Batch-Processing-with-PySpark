@@ -197,23 +197,162 @@ docker-compose exec airflow-webserver airflow dags trigger batch_processing_pipe
 
 ## Analysis Results
 
-### Churn Analysis Output
+After running the pipeline, you can analyze the results using the following methods:
 
-```sql
--- High-risk customers
-SELECT loyalty_number, churn_risk_score, churn_category 
-FROM churn_analysis 
-WHERE churn_category = 'High Risk'
-ORDER BY churn_risk_score DESC;
+### 1. Check CSV Output Files
+
+```bash
+# List generated CSV files
+docker exec assignmentday22-batchprocessingwithpyspark-airflow-webserver-1 \
+  ls -la /opt/airflow/data/output/
+
+# View sample churn analysis data
+docker exec assignmentday22-batchprocessingwithpyspark-airflow-webserver-1 \
+  head -10 /opt/airflow/data/output/churn_analysis.csv
+
+# View loyalty segments data
+docker exec assignmentday22-batchprocessingwithpyspark-airflow-webserver-1 \
+  cat /opt/airflow/data/output/loyalty_segments.csv
 ```
 
-### Retention Analysis Output
+### 2. Query PostgreSQL Database
 
+**Connect to database:**
+```bash
+# Access PostgreSQL container
+docker exec -it assignmentday22-batchprocessingwithpyspark-postgres_business-1 \
+  psql -U postgres -d batch_processing
+```
+
+**Ready-to-use SQL queries:**
+
+#### Customer Churn Analysis
 ```sql
--- Cohort retention rates
-SELECT cohort_month, period_number, retention_rate
-FROM retention_analysis
-ORDER BY cohort_month, period_number;
+-- View churn distribution
+SELECT churn_category, COUNT(*) as customer_count, 
+       ROUND(AVG(churn_risk_score), 2) as avg_risk_score
+FROM batch_processing.customer_churn_analysis 
+GROUP BY churn_category 
+ORDER BY avg_risk_score DESC;
+
+-- High-risk customers (copy-paste ready)
+SELECT customer_id, total_flights, churn_risk_score, retention_recommendation
+FROM batch_processing.customer_churn_analysis 
+WHERE churn_category = 'HIGH_RISK'
+ORDER BY churn_risk_score DESC
+LIMIT 10;
+
+-- Customer analysis by flight frequency
+SELECT 
+  CASE 
+    WHEN total_flights >= 20 THEN '20+ flights'
+    WHEN total_flights >= 10 THEN '10-19 flights'
+    WHEN total_flights >= 5 THEN '5-9 flights'
+    ELSE 'Under 5 flights'
+  END as flight_category,
+  COUNT(*) as customers,
+  ROUND(AVG(churn_risk_score), 2) as avg_risk
+FROM batch_processing.customer_churn_analysis
+GROUP BY flight_category
+ORDER BY avg_risk DESC;
+```
+
+#### Monthly Retention Metrics
+```sql
+-- View retention trends (copy-paste ready)
+SELECT year_month, retention_rate, churn_rate, total_customers
+FROM batch_processing.monthly_retention_metrics 
+ORDER BY year_month;
+
+-- Best and worst performing months
+(SELECT 'Best Month' as type, year_month, retention_rate 
+ FROM batch_processing.monthly_retention_metrics 
+ ORDER BY retention_rate DESC LIMIT 1)
+UNION ALL
+(SELECT 'Worst Month' as type, year_month, retention_rate 
+ FROM batch_processing.monthly_retention_metrics 
+ ORDER BY retention_rate ASC LIMIT 1);
+```
+
+#### Loyalty Segment Performance
+```sql
+-- Loyalty tier comparison (copy-paste ready)
+SELECT loyalty_card, customer_count, 
+       ROUND(avg_flights_per_customer, 2) as avg_flights,
+       ROUND(total_revenue_estimate, 2) as revenue_estimate,
+       ROUND(segment_health_score, 2) as health_score
+FROM batch_processing.loyalty_segment_performance 
+ORDER BY segment_health_score DESC;
+
+-- Revenue per customer by tier
+SELECT loyalty_card,
+       ROUND(total_revenue_estimate / customer_count, 2) as revenue_per_customer
+FROM batch_processing.loyalty_segment_performance 
+ORDER BY revenue_per_customer DESC;
+```
+
+### 3. Business Intelligence Queries
+
+#### Cross-Analysis Queries
+```sql
+-- Customer value segmentation
+SELECT 
+  CASE 
+    WHEN total_flights >= 30 THEN 'VIP'
+    WHEN total_flights >= 15 THEN 'Premium'
+    WHEN total_flights >= 5 THEN 'Regular'
+    ELSE 'Occasional'
+  END as customer_segment,
+  COUNT(*) as customers,
+  ROUND(AVG(total_distance), 0) as avg_distance,
+  ROUND(AVG(avg_points_per_flight), 0) as avg_points_per_flight
+FROM batch_processing.customer_churn_analysis
+GROUP BY customer_segment
+ORDER BY avg_distance DESC;
+
+-- Risk vs Activity Analysis
+SELECT churn_category,
+       ROUND(AVG(total_flights), 1) as avg_flights,
+       ROUND(AVG(total_distance), 0) as avg_distance,
+       COUNT(*) as customer_count
+FROM batch_processing.customer_churn_analysis
+GROUP BY churn_category
+ORDER BY avg_flights DESC;
+```
+
+### 4. Export Results
+
+```bash
+# Export churn analysis to local CSV
+docker exec assignmentday22-batchprocessingwithpyspark-postgres_business-1 \
+  psql -U postgres -d batch_processing -c \
+  "COPY (SELECT * FROM batch_processing.customer_churn_analysis) TO STDOUT WITH CSV HEADER" \
+  > local_churn_analysis.csv
+
+# Export retention metrics
+docker exec assignmentday22-batchprocessingwithpyspark-postgres_business-1 \
+  psql -U postgres -d batch_processing -c \
+  "COPY (SELECT * FROM batch_processing.monthly_retention_metrics) TO STDOUT WITH CSV HEADER" \
+  > local_retention_metrics.csv
+```
+
+### 5. Quick Data Validation
+
+```bash
+# Check record counts (copy-paste ready)
+docker exec assignmentday22-batchprocessingwithpyspark-postgres_business-1 \
+  psql -U postgres -d batch_processing -c "
+SELECT 
+  'customer_churn_analysis' as table_name, COUNT(*) as records 
+FROM batch_processing.customer_churn_analysis
+UNION ALL
+SELECT 
+  'monthly_retention_metrics' as table_name, COUNT(*) as records 
+FROM batch_processing.monthly_retention_metrics
+UNION ALL
+SELECT 
+  'loyalty_segment_performance' as table_name, COUNT(*) as records 
+FROM batch_processing.loyalty_segment_performance;"
 ```
 
 ## Development
