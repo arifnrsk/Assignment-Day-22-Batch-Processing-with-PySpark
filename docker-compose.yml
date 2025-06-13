@@ -1,0 +1,197 @@
+x-airflow-common:
+  &airflow-common
+  image: apache/airflow:2.7.3-python3.11
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    _PIP_ADDITIONAL_REQUIREMENTS: 'pyspark==3.4.1 psycopg2-binary==2.9.7 pandas==2.0.3 apache-airflow-providers-postgres==5.6.1 apache-airflow-providers-apache-spark==4.1.3'
+    SPARK_HOME: /opt/spark
+    PYSPARK_PYTHON: python3
+    PYSPARK_DRIVER_PYTHON: python3
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: 5432
+    POSTGRES_DB: batch_processing
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+  volumes:
+    - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
+    - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
+    - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
+    - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-.}/scripts:/opt/airflow/scripts
+    - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/airflow/data
+    - ${AIRFLOW_PROJ_DIR:-.}/spark_analysis_results:/opt/airflow/spark_analysis_results
+  user: "${AIRFLOW_UID:-50000}:0"
+  depends_on: &airflow-common-depends-on
+    postgres:
+      condition: service_healthy
+
+services:
+  # PostgreSQL Database for Airflow
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_db_volume:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+    ports:
+      - "5432:5432"
+
+  # Business PostgreSQL Database
+  postgres_business:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: batch_processing
+    volumes:
+      - postgres_business_volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+    ports:
+      - "5433:5432"
+
+  # Airflow Database Initialization (One-time)
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        echo "Starting Airflow Database Initialization..."
+        
+        # Wait for PostgreSQL to be ready
+        echo "Waiting for PostgreSQL..."
+        while ! pg_isready -h postgres -p 5432 -U airflow; do
+          echo "   PostgreSQL not ready, waiting 2 seconds..."
+          sleep 2
+        done
+        echo "PostgreSQL is ready!"
+        
+        # Create directories with proper permissions
+        echo "Creating directories..."
+        mkdir -p /sources/logs /sources/dags /sources/plugins
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        
+        # Initialize Airflow database
+        echo "Initializing Airflow database..."
+        airflow db init
+        
+        # Create admin user if not exists
+        echo "Creating admin user..."
+        airflow users create \
+          --username ${_AIRFLOW_WWW_USER_USERNAME:-admin} \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com \
+          --password ${_AIRFLOW_WWW_USER_PASSWORD:-admin} || echo "User already exists"
+        
+        echo "Airflow initialization completed successfully!"
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_UPGRADE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-admin}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-admin}
+    user: "0:0"
+    volumes:
+      - ${AIRFLOW_PROJ_DIR:-.}:/sources
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Airflow Webserver
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+
+  # Airflow Scheduler
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+
+  # Spark Master
+  spark-master:
+    image: bitnami/spark:3.4
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - "8081:8080"
+      - "7077:7077"
+    volumes:
+      - ${AIRFLOW_PROJ_DIR:-.}/scripts:/opt/spark/scripts
+      - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/spark/data
+      - ${AIRFLOW_PROJ_DIR:-.}/spark_analysis_results:/opt/spark/spark_analysis_results
+    restart: always
+
+  # Spark Worker
+  spark-worker:
+    image: bitnami/spark:3.4
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    volumes:
+      - ${AIRFLOW_PROJ_DIR:-.}/scripts:/opt/spark/scripts
+      - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/spark/data
+      - ${AIRFLOW_PROJ_DIR:-.}/spark_analysis_results:/opt/spark/spark_analysis_results
+    depends_on:
+      - spark-master
+    restart: always
+
+volumes:
+  postgres_db_volume:
+  postgres_business_volume: 
