@@ -156,7 +156,7 @@ Assignment Day 22 - Batch Processing with PySpark/
 └── artifacts/                            # Assignment artifacts
 ```
 
-##Assignment Deliverables
+## Assignment Deliverables
 
 ### Required Files Included:
 
@@ -165,7 +165,7 @@ Assignment Day 22 - Batch Processing with PySpark/
 3. **PostgreSQL Queries**: SQL operations within pipeline
 4. **Documentation**: `BATCH_PROCESSING_DOCUMENTATION.md`
 
-###Output Results:
+### Output Results:
 
 - **Console Print**: Comprehensive summary reports in Airflow logs
 - **CSV Files**: 3 analysis files (churn, retention, loyalty)
@@ -226,7 +226,7 @@ FROM retention_analysis
 ORDER BY cohort_month, period_number;
 ```
 
-## 🔧 Development
+## Development
 
 ### Adding New Analysis
 
