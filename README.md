@@ -125,7 +125,7 @@ docker-compose ps
 └── batch_processing_log    # Pipeline execution logs
 ```
 
-##Project Structure
+## Project Structure
 
 ```
 Assignment Day 22 - Batch Processing with PySpark/
