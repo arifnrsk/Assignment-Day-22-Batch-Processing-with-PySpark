@@ -1,6 +1,9 @@
 x-airflow-common:
   &airflow-common
-  image: apache/airflow:2.7.3-python3.11
+  build:
+    context: .
+    dockerfile: Dockerfile.custom
+  image: assignment-day-22-airflow-custom:latest
   environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -10,7 +13,7 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
-    _PIP_ADDITIONAL_REQUIREMENTS: 'pyspark==3.4.1 psycopg2-binary==2.9.7 pandas==2.0.3 apache-airflow-providers-postgres==5.6.1 apache-airflow-providers-apache-spark==4.1.3'
+    # Dependencies are now pre-installed in custom image
     SPARK_HOME: /opt/spark
     PYSPARK_PYTHON: python3
     PYSPARK_DRIVER_PYTHON: python3
