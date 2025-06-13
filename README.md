@@ -2,11 +2,11 @@
 
 **Assignment Day 22 - Data Engineer Bootcamp**  
 
-## 📋 Project Overview
+## Project Overview
 
 This project implements a comprehensive **Batch Processing Pipeline** using **Apache Airflow** and **PySpark** to process airline customer data. The pipeline performs advanced ETL operations, conducts churn-retention analysis, and stores results in multiple formats (PostgreSQL, CSV, Console).
 
-###Assignment Requirements Completed
+### Assignment Requirements Completed
 
 1. **Infrastructure Setup**: Apache Airflow + PySpark containerized environment
 2. **Airflow DAG Creation**: 5-task automated pipeline workflow
@@ -115,7 +115,7 @@ docker-compose ps
 └── batch_processing_log    # Pipeline execution logs
 ```
 
-##Project Structure
+## Project Structure
 
 ```
 Assignment Day 22 - Batch Processing with PySpark/
@@ -146,7 +146,7 @@ Assignment Day 22 - Batch Processing with PySpark/
 └── artifacts/                            # Assignment artifacts
 ```
 
-##Assignment Deliverables
+## Assignment Deliverables
 
 ### Required Files Included:
 
@@ -155,7 +155,7 @@ Assignment Day 22 - Batch Processing with PySpark/
 3. **PostgreSQL Queries**: SQL operations within pipeline
 4. **Documentation**: `BATCH_PROCESSING_DOCUMENTATION.md`
 
-###Output Results:
+### Output Results:
 
 - **Console Print**: Comprehensive summary reports in Airflow logs
 - **CSV Files**: 3 analysis files (churn, retention, loyalty)
@@ -216,7 +216,7 @@ FROM retention_analysis
 ORDER BY cohort_month, period_number;
 ```
 
-## 🔧 Development
+## Development
 
 ### Adding New Analysis
 

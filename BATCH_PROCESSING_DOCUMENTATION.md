@@ -4,7 +4,7 @@
 
 ---
 
-## **📋 Table of Contents**
+## **Table of Contents**
 
 1. [Project Overview](#project-overview)
 2. [Architecture](#architecture)
@@ -370,10 +370,10 @@ docker exec assignmentday22-batchprocessingwithpyspark-postgres_business-1 \
 
 This batch processing pipeline successfully demonstrates:
 
-1. **Scalable Architecture**: Containerized microservices approach
-2. **Automated Orchestration**: Airflow-managed workflow execution
-3. **Advanced Analytics**: Multi-dimensional customer analysis
-4. **Data Integration**: Seamless PostgreSQL and CSV output
-5. **Production Readiness**: Comprehensive error handling and monitoring
+1. Containerized microservices approach
+2. Airflow-managed workflow execution
+3. Multi-dimensional customer analysis
+4. Seamless PostgreSQL and CSV output
+5. Comprehensive error handling and monitoring
 
 The system processes airline customer data efficiently, providing actionable business insights for customer retention and loyalty program optimization.
