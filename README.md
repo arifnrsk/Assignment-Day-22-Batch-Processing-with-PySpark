@@ -252,7 +252,7 @@ docker exec assignment-day-22-batch-processing-with-pyspark-airflow-webserver-1 
 **Connect to database:**
 ```bash
 # Access PostgreSQL container
-docker exec -it assignmentday22-batchprocessingwithpyspark-postgres_business-1 \
+docker exec -it assignment-day-22-batch-processing-with-pyspark-postgres_business-1 \
   psql -U postgres -d batch_processing
 ```
 
@@ -356,13 +356,13 @@ ORDER BY avg_flights DESC;
 
 ```bash
 # Export churn analysis to local CSV
-docker exec assignmentday22-batchprocessingwithpyspark-postgres_business-1 \
+docker exec assignment-day-22-batch-processing-with-pyspark-postgres_business-1 \
   psql -U postgres -d batch_processing -c \
   "COPY (SELECT * FROM batch_processing.customer_churn_analysis) TO STDOUT WITH CSV HEADER" \
   > local_churn_analysis.csv
 
 # Export retention metrics
-docker exec assignmentday22-batchprocessingwithpyspark-postgres_business-1 \
+docker exec assignment-day-22-batch-processing-with-pyspark-postgres_business-1 \
   psql -U postgres -d batch_processing -c \
   "COPY (SELECT * FROM batch_processing.monthly_retention_metrics) TO STDOUT WITH CSV HEADER" \
   > local_retention_metrics.csv
@@ -372,7 +372,7 @@ docker exec assignmentday22-batchprocessingwithpyspark-postgres_business-1 \
 
 ```bash
 # Check record counts (copy-paste ready)
-docker exec assignmentday22-batchprocessingwithpyspark-postgres_business-1 \
+docker exec assignment-day-22-batch-processing-with-pyspark-postgres_business-1 \
   psql -U postgres -d batch_processing -c "
 SELECT 
   'customer_churn_analysis' as table_name, COUNT(*) as records 
