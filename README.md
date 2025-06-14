@@ -235,15 +235,15 @@ After running the pipeline, you can analyze the results using the following meth
 
 ```bash
 # List generated CSV files
-docker exec assignmentday22-batchprocessingwithpyspark-airflow-webserver-1 \
+docker exec assignment-day-22-batch-processing-with-pyspark-airflow-webserver-1 \
   ls -la /opt/airflow/data/output/
 
 # View sample churn analysis data
-docker exec assignmentday22-batchprocessingwithpyspark-airflow-webserver-1 \
+docker exec assignment-day-22-batch-processing-with-pyspark-airflow-webserver-1 \
   head -10 /opt/airflow/data/output/churn_analysis.csv
 
 # View loyalty segments data
-docker exec assignmentday22-batchprocessingwithpyspark-airflow-webserver-1 \
+docker exec assignment-day-22-batch-processing-with-pyspark-airflow-webserver-1 \
   cat /opt/airflow/data/output/loyalty_segments.csv
 ```
 
