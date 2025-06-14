@@ -96,9 +96,14 @@ services:
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
         
-        # Initialize Airflow database
-        echo "Initializing Airflow database..."
-        airflow db init
+        # Check if DB is already initialized
+        if airflow db check; then
+          echo "Database already initialized, upgrading if needed..."
+          airflow db upgrade
+        else
+          echo "Initializing Airflow database..."
+          airflow db init
+        fi
         
         # Create admin user if not exists
         echo "Creating admin user..."
@@ -111,6 +116,9 @@ services:
           --password ${_AIRFLOW_WWW_USER_PASSWORD:-admin} || echo "User already exists"
         
         echo "Airflow initialization completed successfully!"
+        
+        # Add a small delay to ensure everything is properly committed
+        sleep 5
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_UPGRADE: 'true'
@@ -123,7 +131,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
+        
   # Airflow Webserver
   airflow-webserver:
     <<: *airflow-common
@@ -136,7 +144,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-    restart: always
+    restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
