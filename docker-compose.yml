@@ -81,7 +81,7 @@ services:
     command:
       - -c
       - |
-        echo "Starting Airflow Database Initialization..."
+        echo "Starting FULLY AUTOMATED Airflow Database Initialization..."
         
         # Wait for PostgreSQL to be ready
         echo "Waiting for PostgreSQL..."
@@ -96,29 +96,59 @@ services:
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
         
-        # Check if DB is already initialized
-        if airflow db check; then
-          echo "Database already initialized, upgrading if needed..."
-          airflow db upgrade
+        # Initialize or upgrade database
+        echo "Checking database status..."
+        if airflow db check 2>/dev/null; then
+          echo "Database exists, running migration/upgrade..."
+          airflow db migrate
         else
-          echo "Initializing Airflow database..."
+          echo "Database doesn't exist, initializing..."
           airflow db init
+          echo "Running migration to ensure latest schema..."
+          airflow db migrate
         fi
         
-        # Create admin user if not exists
+        # Create admin user (with error handling)
         echo "Creating admin user..."
-        airflow users create \
-          --username ${_AIRFLOW_WWW_USER_USERNAME:-admin} \
-          --firstname Admin \
-          --lastname User \
-          --role Admin \
-          --email admin@example.com \
-          --password ${_AIRFLOW_WWW_USER_PASSWORD:-admin} || echo "User already exists"
+        if airflow users list | grep -q "admin"; then
+          echo "Admin user already exists, skipping..."
+        else
+          echo "Creating new admin user..."
+          airflow users create \
+            --username ${_AIRFLOW_WWW_USER_USERNAME:-admin} \
+            --firstname Admin \
+            --lastname User \
+            --role Admin \
+            --email admin@example.com \
+            --password ${_AIRFLOW_WWW_USER_PASSWORD:-admin}
+          echo "Admin user created successfully!"
+        fi
+
+        # Setup PostgreSQL connection automatically
+        echo "Setting up PostgreSQL business database connection..."
+        airflow connections delete postgres_default 2>/dev/null || echo "Connection doesn't exist yet"
+        airflow connections add postgres_default \
+          --conn-type postgres \
+          --conn-host postgres_business \
+          --conn-login postgres \
+          --conn-password postgres \
+          --conn-schema batch_processing \
+          --conn-port 5432
+        echo "PostgreSQL connection configured!"
         
-        echo "Airflow initialization completed successfully!"
+        # Verify everything is working
+        echo "Verifying database and user setup..."
+        airflow db check
+        echo "Database check passed!"
         
-        # Add a small delay to ensure everything is properly committed
-        sleep 5
+        airflow users list
+        echo "User verification completed!"
+        
+        echo "🔥 AIRFLOW INITIALIZATION COMPLETED SUCCESSFULLY! 🔥"
+        echo "Webserver and Scheduler are now safe to start!"
+        
+        # Small delay to ensure everything is committed
+        sleep 3
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_UPGRADE: 'true'
@@ -146,7 +176,8 @@ services:
       start_period: 60s
     restart: unless-stopped
     depends_on:
-      <<: *airflow-common-depends-on
+      postgres:
+        condition: service_healthy
       airflow-init:
         condition: service_completed_successfully
 
@@ -160,9 +191,10 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-    restart: always
+    restart: unless-stopped
     depends_on:
-      <<: *airflow-common-depends-on
+      postgres:
+        condition: service_healthy
       airflow-init:
         condition: service_completed_successfully
 
